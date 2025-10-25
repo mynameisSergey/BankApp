@@ -2,6 +2,7 @@ package com.exchange.kafka;
 
 import com.exchange.model.dto.CurrencyEnum;
 import com.exchange.model.dto.ExchangeDto;
+import com.exchange.metrics.CustomMetrics;
 import com.exchange.repository.ExchangeRepository;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ public class KafkaTest {
 
     @MockitoBean
     private SecurityFilterChain securityFilterChain;
+
+    @MockitoBean
+    private CustomMetrics customMetrics;
 
     @Autowired
     private KafkaTemplate<String, ExchangeDto> kafkaTemplate;
