@@ -4,9 +4,9 @@ import com.exchange.model.dto.CurrencyEnum;
 import com.exchange.model.dto.ExchangeDto;
 import com.exchange.model.entities.Exchange;
 import com.exchange.repository.ExchangeRepository;
-import com.exchange.service.ExchangeService;
+import com.exchange.metrics.CustomMetrics;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Equals;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
@@ -18,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @Import(ExchangeService.class)
 public class ExchangeServiceTest {
+
+    @MockitoBean
+    private CustomMetrics customMetrics;
 
     @Autowired
     private ExchangeService exchangeService;
@@ -35,6 +38,15 @@ public class ExchangeServiceTest {
         Optional<Exchange> found1 = Optional.ofNullable(exchangeRepository.findByCurrency(CurrencyEnum.USD));
         assertTrue(found1.isPresent());
         assertEquals(1.1, found1.get().getValue());
+
+        ExchangeDto exchangeDto2 = new ExchangeDto();
+        exchangeDto2.setCurrency(CurrencyEnum.RUB);
+        exchangeDto2.setValue(1.2);
+        exchangeService.setExchange(exchangeDto2);
+
+        Optional<Exchange> found2 = Optional.ofNullable(exchangeRepository.findByCurrency(CurrencyEnum.RUB));
+        assertTrue(found2.isPresent());
+        assertEquals(1.2, found2.get().getValue());
     }
 
     @Test
