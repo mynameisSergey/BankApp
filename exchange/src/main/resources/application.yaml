@@ -1,9 +1,24 @@
 server:
   port: 8084
 
+management:
+  zipkin:
+    tracing:
+      #endpoint:  http://127.0.0.1:9411/api/v2/spans
+      endpoint: ${ZIPKIN_URL:http://127.0.0.1:9411/api/v2/spans}
+  tracing:
+    sampling:
+      probability: 0.6
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+
 spring:
   application:
     name: exchange-api
+
   kafka:
     admin:
       auto-create: true
@@ -19,27 +34,18 @@ spring:
         spring.json.value.default.type: com.exchange.dto.ExchangeDto
         spring.json.trusted.packages: "*"
 
-
   datasource:
-    #url: jdbc:h2:mem:usersdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    #username: sa
-    #password:
-    url: jdbc:postgresql://localhost:5432/bank
-    username: postgres
-    password: admin
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bank}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
   sql:
     init:
       mode: always
       schema-locations: classpath:schema.sql
   jpa:
     hibernate:
-      #ddl-auto: none          #Ничего не делает
-      #ddl-auto: create        #Создаёт таблицы каждый раз с нуля (удаляет старые данные!)
-      #ddl-auto: create-drop   #Создаёт при старте, удаляет при завершении
-      #ddl-auto: update        #Создаёт недостающие таблицы и колонки, не удаляя данные
-      #ddl-auto: validate      #Проверяет соответствие между сущностями и таблицами, но не изменяет БД
       ddl-auto: update
-    show-sql: true
+  #    show-sql: true
 
   security:
     oauth2:
