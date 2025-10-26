@@ -1,8 +1,10 @@
 package com.transfer.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,8 +48,6 @@ public class SecurityConfiguration {
                 .build();
     }
 
-
-
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
@@ -65,22 +65,46 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public RestClient.Builder restClientBuilder(OAuth2AuthorizedClientManager authorizedClientManager) {
+    public ClientHttpRequestInterceptor authInterceptor(OAuth2AuthorizedClientManager authorizedClientManager) {
+        return (request, body, execution) -> {
+            var authRequest = OAuth2AuthorizeRequest
+                    .withClientRegistrationId("keycloack")
+                    .principal("system")
+                    .build();
+            var client = authorizedClientManager.authorize(authRequest);
+            if (client == null) {
+                throw new IllegalStateException("Не удалось получить OAuth2AuthorizedClient");
+            }
 
-        return RestClient.builder()
-                .requestInterceptor((request, body, execution) -> {
-                    OAuth2AuthorizeRequest authRequest = OAuth2AuthorizeRequest
-                            .withClientRegistrationId("keycloak")
-                            .principal("system")
-                            .build();
+            request.getHeaders().setBearerAuth(client.getAccessToken().getTokenValue());
+            return execution.execute(request, body);
+        };
+    }
 
-                    OAuth2AuthorizedClient client = authorizedClientManager.authorize(authRequest);
-                    if (client == null) {
-                        throw new IllegalStateException("Не удалось получить OAuth2AuthorizedClient");
-                    }
+    @Bean
+    public RestClient accountsApiClient(RestClient.Builder builder, ClientHttpRequestInterceptor authInterceptor,
+                                        @Value("${appservices.accounts-api:http://localhost:8081/api}") String baseUrl) {
+        return builder
+                .requestInterceptor(authInterceptor) // добавляем токен
+                .baseUrl(baseUrl)
+                .build(); // трассировка добавится автоматически
+    }
 
-                    request.getHeaders().setBearerAuth(client.getAccessToken().getTokenValue());
-                    return execution.execute(request, body);
-                });
+    @Bean
+    public RestClient blockerApiClient(RestClient.Builder builder, ClientHttpRequestInterceptor authInterceptor,
+                                       @Value("${appservices.blocker-api:http://localhost:8087/api}") String baseUrl) {
+        return builder
+                .requestInterceptor(authInterceptor) // добавляем токен
+                .baseUrl(baseUrl)
+                .build(); // трассировка добавится автоматически
+    }
+
+    @Bean
+    public RestClient exchangeApiClient(RestClient.Builder builder, ClientHttpRequestInterceptor authInterceptor,
+                                        @Value("${appservices.exchange-api:http://localhost:8084/api}") String baseUrl) {
+        return builder
+                .requestInterceptor(authInterceptor) // добавляем токен
+                .baseUrl(baseUrl)
+                .build(); // трассировка добавится автоматически
     }
 }
