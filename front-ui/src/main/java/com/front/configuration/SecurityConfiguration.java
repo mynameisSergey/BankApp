@@ -1,7 +1,6 @@
 package com.front.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -13,8 +12,6 @@ import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
-
-import static org.bouncycastle.internal.asn1.iana.IANAObjectIdentifiers.security;
 
 @Configuration
 public class SecurityConfiguration {
