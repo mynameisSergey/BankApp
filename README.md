@@ -89,155 +89,241 @@ _Для подробностей смотрите [схему на GitHub](https
 
 Приложение состоит из следующих частей:
 
-⦁ postgresql
-⦁ kafka
-⦁ nginx
-⦁ keycloak с конфигурацией
-⦁ notifications — сервис уведомлений
-⦁ blocker — сервис блокировки операций
-⦁ exchange-generator — генератор курсов валют
-⦁ exchange — хранение курсов валют
-⦁ cash — ввод/вывод наличных
-⦁ transfer — переводы между счетами
-⦁ accounts — хранение информации о пользователях и счетах
-⦁ front-ui — веб-клиент
+1. zipkin
+2. prometheus с алертами
+3. grafana с дашбордами
+4. elasticsearch
+5. logstash
+6. kibana
+7. postgresql
+8. kafka
+9. nginx
+10. keycloak с конфигурацией
+11. notifications - сервис уведомлений
+12. blocker - сервис блокировки операций
+13. exchenge-generator - приложение для генерации курсов валют
+14. exchange - сервис хранения курсов валют
+15. cash - сервис ввода и вывода наличных
+16. transfer - сервис перевода денег между счетами
+17. accounts - сервис хранения информации о пользователях и счетах
+18. front-ui - веб-приложение с клиентским HTML-интерфейсом
 
 ————————
+# 📌 Запуск приложения с Helm на Windows 10
 
-📌 Запуск приложения с Helm на Windows 10
+## Предварительные требования
+- Установлен Maven
+- Установлен Docker
+- Установлены Minikube и kubectl
 
-1. Собрать все модули Maven пакетом  
-   Выполнить из корня проекта:
+## Шаги запуска
 
-   mvn clean package
+### 1. Запуск Minikube
+Запустите Minikube с увеличенными ресурсами памяти и процессора:
+```bash
+minikube start --driver=docker --memory=15000 --cpus=4
+```
 
+### 2. Добавление репозиториев Helm
+Добавьте необходимые репозитории Helm:
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add zipkin https://zipkin.io/zipkin-helm
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add elastic https://helm.elastic.co
+helm repo update
+```
 
-2. Запустить Minikube с Docker драйвером:
+### 3. Установка Ingress-Nginx
+Установите Ingress-Nginx:
+```bash
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+--namespace ingress-nginx --create-namespace
+```
 
-   minikube start --driver=docker
+### 4. Сборка Docker-контейнеров
+Соберите Docker-контейнеры для каждого модуля:
+```bash
+docker build -t exchange-api ./exchange
+docker build -t exchange-generator ./exchange-generator
+docker build -t blocker-api ./blocker
+docker build -t notifications-api ./notifications
+docker build -t accounts-api ./accounts
+docker build -t transfer-api ./transfer
+docker build -t cash-api ./cash
+docker build -t front-ui ./front-ui
+```
 
+### 5. Обновление зависимостей Helm
+Обновите зависимости Helm:
+```bash
+helm dependency update ./bank-app
+```
 
-3. Установить ingress-nginx контроллер:
+### 6. Развертывание приложения
+Разверните приложение в Kubernetes:
+```bash
+helm install bank-app ./bank-app
+```
 
-   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-   helm repo update
-   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+### 7. Проверка развернутых pod'ов
+Проверьте состояние pod'ов:
+```bash
+kubectl get pods
+```
 
+### 8. Проброс порта для фронтенда
+Для доступа к приложению локально выполните:
+```bash
+kubectl port-forward svc/bank-app-front-ui 8080:8080
+```
 
-4. Использовать Docker внутри Minikube:
+Теперь приложение доступно по адресу: http://localhost:8080
+▌ Настройка и использование приложения с Jenkins (Windows 10)
 
-   minikube docker-env | Invoke-Expression
+▌ Подготовка окружения
 
+▌ Прописывание хостов
 
-5. Построить docker-образы сервисов:
+Откройте файл etc\\hosts и добавьте записи для сервисов:
 
-   docker build -t exchange-api./exchange
-   docker build -t exchange-generator./exchange-generator
-   docker build -t blocker-api./blocker
-   docker build -t notifications-api./notifications
-   docker build -t accounts-api./accounts
-   docker build -t transfer-api./transfer
-   docker build -t cash-api./cash
-   docker build -t front-ui./front-ui
+127.0.0.1 bankapp
+127.0.0.1 zipkin
+127.0.0.1 prometheus
+127.0.0.1 grafana
+127.0.0.1 kibana
 
+▌ Запуск туннеля Minikube
 
-6. Обновить зависимости Helm чарта:
+Запустите туннель Minikube в отдельной консоли:
 
-   helm dependency update./bank-app
+minikube tunnel
 
+▌ Доступ к сервисам
 
-7. Установить приложение через Helm в текущий кластер:
+Приложения будут доступны по следующим адресам:
 
-   helm install bank-app./bank-app
+- Приложение: http://bankapp
+- Zipkin: http://zipkin
+- Prometheus: http://prometheus
+- Grafana: http://grafana
+- Kibana: http://kibana
 
+▌ Мониторинг и метрики
 
-8. Проверить готовность подов:
+▌ Кастомные метрики
 
-   kubectl get pods
+В приложении настроены следующие кастомные метрики:
 
+- user_login_success_total: Количество успешных логинов пользователя
+- user_login_failure_total: Количество неудачных логинов пользователя
+- transfer_failure_total: Количество неудачных переводов денежных средств
+- transfer_blocker_total: Количество заблокированных переводов денежных средств
+- cash_blocker_total: Количество заблокированных операций с наличными средствами
 
-9. Перенаправить порт для фронтенда:
+▌ Алерты и дашборды
 
-   kubectl port-forward svc/bank-app-front-ui 8080:8080
+- В Prometheus настроены уведомления (алерты).
+- В Grafana созданы панели мониторинга (дашборды).
 
-   Открыть в браузере: http://localhost:8080/
+▌ Остановка приложения
 
-10. (Опционально) Добавить удобный хост в etc/hosts:
-
-    127.0.0.1 bankapp
-
-    И запустить:
-
-    minikube tunnel
-
-    После откроется: http://bankapp/
-
-————————
-
-📌 Остановка приложения
+Удалите приложение из кластера Kubernetes:
 
 helm uninstall bank-app
 
+▌ Запуск Jenkins
 
-————————
+▌ Конфигурация Docker
 
-📌 Запуск Jenkins в Windows 10 с интеграцией Minikube и Docker
+Включите доступ к Docker-демону через TCP без TLS:
 
-1. В настройках Docker Desktop включить:
+- Откройте настройки Docker: Settings > General, включите пункт Expose daemon on tcp://localhost:2375 without TLS.
 
-   Settings -> General -> Expose daemon on tcp://localhost:2375 without TLS
+▌ Настройка переменных окружения Jenkins
 
+Измените значения переменных в файле .env в директории Jenkins:
 
-2. В файле jenkins/.env прописать переменные:
-   ⦁ MINIKUBE_PATH — путь к профилю minikube (напр. C:/Users/your_user/.minikube)
-   ⦁ GHCR_TOKEN — токен GitHub Container Registry
-   ⦁ GITHUB_USERNAME — имя пользователя GitHub
-   ⦁ DOCKER_REGISTRY — адрес Docker Registry
+- Замените значение переменной MINIKUBE_PATH.
+- Присвойте значения переменным GHCR_TOKEN, GITHUB_USERNAME, DOCKER_REGISTRY.
 
-3. Запустить Jenkins через docker-compose в каталоге jenkins:
+▌ Запуск Jenkins
 
-   docker-compose up -d
+Запустите контейнер Jenkins:
 
+docker-compose up -d
 
-4. Подключить Jenkins к Docker-сети Minikube:
+Jenkins будет доступен по адресу: http://localhost:9090.
 
-   docker network connect minikube jenkins
+Подключите сеть Jenkins к сети Minikube:
 
+docker network connect minikube jenkins
 
-————————
+▌ Последовательный запуск чартов
 
-📌 Запуск отдельных Helm-чартов для каждого сервиса
+Для последовательного запуска отдельных компонентов запустите пайплайны Jenkins в следующем порядке:
 
-В Jenkins запускать сборки в следующем порядке, каждый отдельным чартом в namespace default:
+1. 01_zipkin
+2. 02_prometheus
+3. 03_grafana
+4. 04_elasticsearch
+5. 05_logstash
+6. 06_kibana
+7. 07_kafka
+8. 08_keycloak
+9. 09_postgresql
+10. 10_exchange-api
+11. 11_exchange-generator
+12. 12_blocker-api
+13. 13_notifications-api
+14. 14_accounts-api
+15. 15_transfer-api
+16. 16_cash-api
+17. 17_front-ui
 
-01_kafka
-02_keycloak
-03_postgresql
-04_exchange-api
-05_exchange-generator
-06_blocker-api
-07_notifications-api
-08_accounts-api
-09_transfer-api
-10_cash-api
-11_front-ui
+Сервисы будут доступны по указанным выше адресам.
 
-————————
+▌ Полностью автоматизированный запуск
 
-📌 Запуск всего приложения целиком в namespace test (и опционально prod)
-
-В Jenkins запустить сборку:
+Для полного автоматического развертывания приложения выполните следующий пайплайн Jenkins:
 
 00_bank-app
 
+▌ Развёртывание в разных средах
 
-Добавить в etc/hosts:
+▌ Тестовая среда ()
 
-127.0.0.1 BankApp-test
-127.0.0.1 BankApp-prod
+Для развёртывания приложения в тестовом пространстве, пропишите соответствующие записи в файле etc\\hosts:
 
+127.0.0.1 bankapp-test
+127.0.0.1 zipkin-test
+127.0.0.1 prometheus-test
+127.0.0.1 grafana-test
+127.0.0.1 kibana-test
 
-После запуска перейти в браузере:
+Сервисы будут доступны по следующим адресам:
 
-⦁ Тестовое: http://BankApp-test/
-⦁ Продуктовое: http://BankApp-prod/
+- Тестовое приложение: http://bankapp-test
+- Тестовый Zipkin: http://zipkin-test
+- Тестовый Prometheus: http://prometheus-test
+- Тестовая Grafana: http://grafana-test
+- Тестовая Kibana: http://kibana-test
+
+▌ Продуктивная среда ()
+
+Для продуктивного развёртывания пропишите записи в файле etc\\hosts:
+
+127.0.0.1 bankapp-prod
+127.0.0.1 zipkin-prod
+127.0.0.1 prometheus-prod
+127.0.0.1 grafana-prod
+127.0.0.1 kibana-prod
+
+Продуктивные сервисы будут доступны по следующим адресам:
+
+- Продуктивное приложение: http://bankapp-prod
+- Продуктивный Zipkin: http://zipkin-prod
+- Продуктивный Prometheus: http://prometheus-prod
+- Продуктивная Grafana: http://grafana-prod
+- Продуктивная Kibana: http://kibana-prod
