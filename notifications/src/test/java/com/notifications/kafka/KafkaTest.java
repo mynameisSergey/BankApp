@@ -1,4 +1,4 @@
-package kafka;
+package com.notifications.kafka;
 
 import com.notifications.dto.NotificationDto;
 import org.apache.kafka.common.serialization.StringDeserializer;

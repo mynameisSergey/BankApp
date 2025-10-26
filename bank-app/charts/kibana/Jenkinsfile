@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SHARED_REPO = '../shared/bankapp' // рабочая папка на jenkins
+        SHARED_REPO = '../shared/BankApp' // рабочая папка на jenkins
         IMAGE_NAME = "kibana" // название образа
     }
 
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 dir("${SHARED_REPO}") {
                     echo 'get'
-                    git branch: 'metrics', url: 'https://github.com/springRill/bankapp.git'
+                    git branch: 'main', url: 'https://github.com/mynameisSergey/BankApp.git'
                 }
             }
         }

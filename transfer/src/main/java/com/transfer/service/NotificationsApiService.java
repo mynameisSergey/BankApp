@@ -12,7 +12,7 @@ public class NotificationsApiService {
     private final RestClient notificationsServiceClient;
 
     public NotificationsApiService(RestClient.Builder builder,
-                                   @Value("${appservices.notifications-api:http://notifications-api/api}") String baseUrl) {
+                                   @Value("${appservices.notifications-api:http://notifications-api:8086/api}") String baseUrl) {
         this.notificationsServiceClient = builder.baseUrl(baseUrl).build();
     }
 
