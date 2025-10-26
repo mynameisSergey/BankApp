@@ -4,3 +4,5 @@
 /target
 /shelf/
 /workspace.xml
+.mvn/wrapper/
+.idea/
