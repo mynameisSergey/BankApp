@@ -10,6 +10,7 @@ import com.transfer.service.NotificationsApiService;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
+import com.transfer.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,6 +32,9 @@ public abstract class BaseContractTest {
 
     @MockitoBean
     private ExchangeApiService exchangeApiService;
+
+    @MockitoBean
+    private NotificationsProducer notificationsProducer;
 
     @MockitoBean
     private NotificationsApiService notificationsApiService;
