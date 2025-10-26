@@ -23,7 +23,6 @@ public class TransferController {
 
     private final AccountsApiService accountsApiService;
     private final ExchangeApiService exchangeApiService;
-    private final NotificationsApiService notificationsApiService;
     private final NotificationsProducer notificationsProducer;
     private final BlockerApiService blokerApiService;
 
