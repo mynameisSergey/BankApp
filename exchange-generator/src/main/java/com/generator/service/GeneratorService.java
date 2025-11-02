@@ -44,6 +44,6 @@ public class GeneratorService {
             exchangeProducer.setExchange(exchangeDto);
             logger.info("Обмен: {}", exchangeDto);
         });
-        System.out.println(message);
+        logger.info("Сообщение: {}", message);
     }
 }
