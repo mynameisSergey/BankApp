@@ -3,6 +3,8 @@ package com.generator.service;
 import com.generator.dto.CurrencyEnum;
 import com.generator.dto.ExchangeDto;
 import com.sun.source.util.SourcePositions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import java.util.List;
 
 @Service
 public class GeneratorService {
+    private static final Logger logger = LoggerFactory.getLogger(GeneratorService.class);
 
     private final ExchangeProducer exchangeProducer;
     private final List<ExchangeDto> exchangeDtoList = new ArrayList<>();
@@ -39,7 +42,7 @@ public class GeneratorService {
                 }
             }
             exchangeProducer.setExchange(exchangeDto);
-            System.out.println(exchangeDto);
+            logger.info("Обмен: {}", exchangeDto);
         });
         System.out.println(message);
     }
