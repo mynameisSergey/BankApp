@@ -1,7 +1,6 @@
 package com.transfer.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -31,7 +30,6 @@ public class SecurityConfiguration {
                 )
                 .oauth2ResourceServer(customizer -> customizer
                         .jwt(jwtCustomizer -> {
-                            System.out.println();
                             JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
                             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
                                 Map<String, Object> realmAccess = jwt.getClaim("realm_access");

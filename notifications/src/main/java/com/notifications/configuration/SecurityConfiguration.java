@@ -25,7 +25,6 @@ public class SecurityConfiguration {
                 )
                 .oauth2ResourceServer(customizer -> customizer
                         .jwt(jwtCustomizer -> {
-                            System.out.println();
                             JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
                             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
                                 Map<String, Object> realmAccess = jwt.getClaim("realm_access");
