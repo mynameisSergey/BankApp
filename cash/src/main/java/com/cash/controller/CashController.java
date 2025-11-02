@@ -13,7 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.management.OperationsException;
 import java.util.Enumeration;
 
@@ -21,6 +22,7 @@ import java.util.Enumeration;
 @RequestMapping("/api/cash")
 @RequiredArgsConstructor
 public class CashController {
+    private static final Logger logger = LoggerFactory.getLogger(CashController.class);
 
     private final AccountsApiService accountsApiService;
     private final NotificationsApiService notificationApiService;
@@ -33,7 +35,7 @@ public class CashController {
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = headerNames.nextElement();
-            System.out.println(name + ": " + request.getHeader(name));
+            logger.info("{}: {}", name, request.getHeader(name));
         }
 
         if (!blockerApiService.validate()) {
