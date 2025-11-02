@@ -7,6 +7,8 @@ import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.propagation.Propagator;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @Service
 public class NotificationsProducer {
+    private static final Logger logger = LoggerFactory.getLogger(NotificationsProducer.class);
 
     private final OAuth2TokenProvider tokenProvider;
     private final KafkaTemplate<String, NotificationDto> kafkaTemplate;
@@ -24,7 +27,7 @@ public class NotificationsProducer {
     public void notificate(NotificationDto notificationDto) {
         String token = tokenProvider.getAccessToken();
 
-        System.out.println("token=" + token);
+        logger.info("token: {}", token);
 
         ProducerRecord<String, NotificationDto> record =
                 new ProducerRecord<>("notification", notificationDto.getLogin(), notificationDto);
